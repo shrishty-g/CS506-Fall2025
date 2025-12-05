@@ -1,35 +1,34 @@
 # Problem Statement 1 (From one of the quizzes)
 
-We modify K-means so that cluster assignments use L1 (Manhattan) distance, but centroid updates still use the mean.  
-The question is:
+- We modify K-means so that cluster assignments use L1 (Manhattan) distance, but centroid updates still use the mean.  
+- The question is:  
+  Does this modified version always converge, or can it oscillate?
 
-Does this modified version always converge, or can it oscillate?
+### Why Oscillation Can Occur
+- In standard K-means, both steps—
+  assigning points to the closest centroid, and
+  updating centroids using the mean—
+  minimize the same L2 objective.  
+- This makes classical K-means a coordinate-descent algorithm, guaranteeing the distortion never increases and therefore convergence.
 
-#### Why Oscillation Can Occur (Short Mathematical Explanation)
+### The Modified Algorithm
+#### - Assignment step (L1)
+- assign x_i → arg min_k ||x_i - μ_k||₁
 
-For L1 distance, the centroid that minimizes the distortion
+#### - Update step (L2-based mean)
+- μ_k = (1 / |C_k|) * sum_{x_i in C_k} x_i
 
-J = sum_i |x_i - c|
+### The Critical Mismatch
+- For L1 distortion, the correct minimizer is the median, not the mean.  
+- Thus the update step does **not** minimize the same objective used by the assignment step.
+- The L1 objective is:  
+  J = sum_i |x_i - c|
+- Because the mean may move the centroid away from the true L1 minimizer (the median), the distortion is **not guaranteed to decrease** after each update.
 
-is the median, not the mean.
-
-However, the modified algorithm still updates centroids using:
-
-mu_k = (1 / |C_k|) * sum_{x in C_k} x
-
-This creates a mismatch:
-
-- The assignment step uses L1 distance  
-- The update step uses the mean (optimal for L2, not L1)
-
-Because these two steps optimize different objectives, the algorithm is no longer coordinate descent, and the distortion is not guaranteed to decrease each iteration.
-
-This makes oscillation possible. A 2-cycle occurs when:
-
-mu(t) -> mu(t+1) -> mu(t+2) = mu(t)
-
-meaning the centroids alternate between two states without converging.
-
+### Result: Possible Oscillation
+- This mismatch can cause a 2-cycle oscillation:  
+  μ^(t) → μ^(t+1) → μ^(t+2) = μ^(t)
+- This means the centroids alternate indefinitely between two configurations instead of converging.
 
 ---
 
